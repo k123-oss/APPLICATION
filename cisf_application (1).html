@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CISF Application Generator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap');
+
+  :root {
+    --navy: #0a1628;
+    --gold: #c8973a;
+    --gold-light: #e8b84b;
+    --cream: #f5f0e8;
+    --border: #c8973a44;
+    --text-dim: #8a9bb5;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--navy);
+    color: var(--cream);
+    font-family: 'Rajdhani', sans-serif;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, #1a2d5a22 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, #c8973a11 0%, transparent 40%);
+  }
+
+  .header {
+    text-align: center;
+    padding: 36px 20px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .header::after {
+    content: '';
+    display: block;
+    width: 80px; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 16px auto 0;
+  }
+  .emblem { font-size: 42px; margin-bottom: 8px; filter: drop-shadow(0 0 12px #c8973a55); }
+  .header h1 { font-size: 26px; font-weight: 700; letter-spacing: 4px; color: var(--gold); text-transform: uppercase; }
+  .header p { font-size: 13px; color: var(--text-dim); letter-spacing: 2px; margin-top: 4px; }
+  .creator-tag { font-size: 11px; color: var(--gold); letter-spacing: 1.5px; margin-top: 10px; opacity: 0.75; font-style: italic; }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+
+  .form-panel {
+    background: #0d1e38;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 28px;
+    position: sticky;
+    top: 20px;
+  }
+  .form-panel h2 {
+    font-size: 15px; font-weight: 700; letter-spacing: 3px;
+    text-transform: uppercase; color: var(--gold);
+    margin-bottom: 22px; padding-bottom: 12px; border-bottom: 1px solid var(--border);
+  }
+  .field { margin-bottom: 18px; }
+  .field label {
+    display: block; font-size: 11px; font-weight: 600;
+    letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px;
+  }
+  .field input, .field select {
+    width: 100%; background: #071428; border: 1px solid #1e3a6a;
+    border-radius: 3px; color: var(--cream);
+    font-family: 'Rajdhani', sans-serif; font-size: 15px; font-weight: 500;
+    padding: 10px 14px; outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .field input:focus, .field select:focus { border-color: var(--gold); box-shadow: 0 0 0 2px #c8973a22; }
+  .field select option { background: #071428; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  .btn-download {
+    width: 100%; margin-top: 8px; padding: 14px;
+    background: linear-gradient(135deg, #b8852a, var(--gold-light));
+    border: none; border-radius: 3px; color: var(--navy);
+    font-family: 'Rajdhani', sans-serif; font-size: 15px; font-weight: 700;
+    letter-spacing: 3px; text-transform: uppercase; cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+  }
+  .btn-download:hover { opacity: 0.9; transform: translateY(-1px); }
+  .btn-download:active { transform: translateY(0); }
+
+  /* PREVIEW */
+  .preview-panel {
+    background: #fff; color: #111; border-radius: 4px;
+    box-shadow: 0 8px 40px #00000055;
+    padding: 52px 44px;
+    font-family: 'Times New Roman', serif;
+    font-size: 13.5px; line-height: 1.9;
+    min-height: 600px; position: relative;
+  }
+  .preview-label {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 10px; letter-spacing: 2px; color: #bbb;
+    text-transform: uppercase; margin-bottom: 20px;
+  }
+
+  .app-to { margin-bottom: 14px; }
+  .app-to p { margin: 0; line-height: 1.7; }
+  .app-subject { margin-bottom: 14px; }
+  .app-salute { margin-bottom: 10px; }
+  .app-body p { text-indent: 2.2em; margin-bottom: 10px; text-align: justify; }
+
+  .closing-row {
+    margin-top: 44px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .sig-block {
+    margin-top: 54px;
+    text-align: right;
+    line-height: 1.9;
+  }
+  .sig-block p { margin: 0; font-size: 13px; }
+
+  .placeholder { color: #1a5eab; font-style: italic; }
+
+  @media (max-width: 768px) {
+    .container { grid-template-columns: 1fr; }
+    .form-panel { position: static; }
+    .preview-panel { padding: 30px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="emblem">🛡️</div>
+  <h1>CISF Application Generator</h1>
+  <p>CAUTION MONEY RETURN — MESS FACILITY</p>
+  <div class="creator-tag">✦ Created by Kaushal Kumar ✦</div>
+</div>
+
+<div class="container">
+
+  <!-- FORM PANEL -->
+  <div class="form-panel">
+    <h2>Enter Your Details</h2>
+
+    <div class="field">
+      <label>Full Name</label>
+      <input type="text" id="inp_name" placeholder="e.g. Sachin Kumar" oninput="updatePreview()">
+    </div>
+    <div class="field">
+      <label>Rank</label>
+      <input type="text" id="inp_rank" placeholder="e.g. CT/GD / HC / ASI / SI" oninput="updatePreview()">
+    </div>
+    <div class="field">
+      <label>CISF Number</label>
+      <input type="text" id="inp_cisf" placeholder="e.g. 220608938" oninput="updatePreview()">
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Serving Since (Month)</label>
+        <select id="inp_month" onchange="updatePreview()">
+          <option value="">Select Month</option>
+          <option>January</option><option>February</option><option>March</option>
+          <option>April</option><option>May</option><option>June</option>
+          <option>July</option><option>August</option><option>September</option>
+          <option>October</option><option>November</option><option>December</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Serving Since (Year)</label>
+        <input type="number" id="inp_year" placeholder="e.g. 2022" min="2000" max="2030" oninput="updatePreview()">
+      </div>
+    </div>
+
+    <button class="btn-download" onclick="downloadPDF()">⬇ Download as PDF</button>
+  </div>
+
+  <!-- PREVIEW PANEL -->
+  <div class="preview-panel">
+    <div class="preview-label">Live Preview</div>
+    <div id="app-content"></div>
+  </div>
+
+</div>
+
+<script>
+const { jsPDF } = window.jspdf;
+
+function getToday() {
+  const d = new Date();
+  return `${String(d.getDate()).padStart(2,'0')} / ${String(d.getMonth()+1).padStart(2,'0')} / ${d.getFullYear()}`;
+}
+
+function v(id) { return document.getElementById(id).value.trim(); }
+
+function updatePreview() {
+  const name  = v('inp_name');
+  const rank  = v('inp_rank');
+  const cisf  = v('inp_cisf');
+  const month = v('inp_month');
+  const year  = v('inp_year');
+
+  const N = name  ? `<strong>${name}</strong>`  : `<span class="placeholder">[Your Name]</span>`;
+  const R = rank  ? `<strong>${rank}</strong>`  : `<span class="placeholder">[Rank]</span>`;
+  const C = cisf  ? `<strong>${cisf}</strong>`  : `<span class="placeholder">[CISF No.]</span>`;
+  const S = (month && year) ? `<strong>${month} ${year}</strong>` : `<span class="placeholder">[Month &amp; Year]</span>`;
+
+  const nr = name || '________________________';
+  const rr = rank || '________________________';
+  const cr = cisf || '________________________';
+
+  document.getElementById('app-content').innerHTML = `
+    <div class="app-to">
+      <p>To,</p>
+      <p><strong>The Assistant Commandant,</strong></p>
+      <p><strong>CISF Unit GAIL, Gandhar.</strong></p>
+    </div>
+
+    <div class="app-subject">
+      <strong>Subject: <u>Request for Return of Caution Money from Mess.</u></strong>
+    </div>
+
+    <div class="app-salute">Sir,</div>
+
+    <div class="app-body">
+      <p>Respectfully, I ${N}, Rank: ${R}, CISF No.: ${C}, am working under your esteemed command and control at CISF Unit GAIL, Gandhar since ${S}.</p>
+      <p>I wish to submit that due to my posting affection (transfer), I, therefore, request you to kindly arrange the return of my caution money deposited with the mess, after necessary mess cutting.</p>
+      <p>I shall be most grateful for your kind action in this regard.</p>
+    </div>
+
+    <div class="closing-row">
+      <span><strong>Date: ${getToday()}</strong></span>
+      <span>Yours faithfully,</span>
+    </div>
+
+    <div class="sig-block">
+      <p>Name &nbsp;&nbsp;&nbsp; : ${nr}</p>
+      <p>Rank &nbsp;&nbsp;&nbsp;&nbsp; : ${rr}</p>
+      <p>CISF No. : ${cr}</p>
+    </div>
+  `;
+}
+
+function downloadPDF() {
+  const name  = v('inp_name')  || '________________________';
+  const rank  = v('inp_rank')  || '________________________';
+  const cisf  = v('inp_cisf')  || '________________________';
+  const month = v('inp_month') || '[Month]';
+  const year  = v('inp_year')  || '[Year]';
+  const since = `${month} ${year}`;
+
+  const doc   = new jsPDF({ unit: 'mm', format: 'a4' });
+  const lm    = 25;   // left margin
+  const rm    = 20;   // right margin (from right edge)
+  const pw    = 210;  // page width
+  const rEdge = pw - rm;
+  const usable = pw - lm - rm;
+  let y = 30;
+
+  doc.setFontSize(12);
+
+  // ── TO ──
+  doc.setFont('times', 'normal');
+  doc.text('To,', lm, y);             y += 6.5;
+  doc.setFont('times', 'bold');
+  doc.text('The Assistant Commandant,', lm, y); y += 6.5;
+  doc.text('CISF Unit GAIL, Gandhar.', lm, y);  y += 12;
+
+  // ── SUBJECT ──
+  doc.setFont('times', 'bold');
+  const sLabel = 'Subject: ';
+  const sBody  = 'Request for Return of Caution Money from Mess.';
+  doc.text(sLabel, lm, y);
+  const sLabelW = doc.getTextWidth(sLabel);
+  doc.text(sBody, lm + sLabelW, y);
+  doc.line(lm + sLabelW, y + 0.8, lm + sLabelW + doc.getTextWidth(sBody), y + 0.8);
+  y += 12;
+
+  // ── SIR ──
+  doc.setFont('times', 'normal');
+  doc.text('Sir,', lm, y);
+  y += 10;
+
+  // ── PARAGRAPH HELPER (no overlap, single render) ──
+  function para(text) {
+    doc.setFont('times', 'normal');
+    doc.setFontSize(12);
+    // wrap with indent on first line via spaces
+    const indented = '        ' + text;
+    const lines = doc.splitTextToSize(indented, usable);
+    lines.forEach(ln => {
+      doc.text(ln, lm, y);
+      y += 6.5;
+    });
+    y += 5; // gap after paragraph
+  }
+
+  // ── BODY PARAGRAPHS ──
+  para(`Respectfully, I ${name}, Rank: ${rank}, CISF No.: ${cisf}, am working under your esteemed command and control at CISF Unit GAIL, Gandhar since ${since}.`);
+  para('I wish to submit that due to my posting affection (transfer), I, therefore, request you to kindly arrange the return of my caution money deposited with the mess, after necessary mess cutting.');
+  para('I shall be most grateful for your kind action in this regard.');
+
+  // ── GAP before closing ──
+  y += 18;
+
+  // ── DATE — left side ──
+  doc.setFont('times', 'normal');
+  doc.setFontSize(12);
+  doc.text(`Date: ${getToday()}`, lm, y);
+
+  // ── YOUR FAITHFULLY — right side (same Y as date) ──
+  doc.text('Yours faithfully,', rEdge, y, { align: 'right' });
+  y += 24;
+
+  // ── SIGNATURE BLOCK — right aligned (matching sample PDF) ──
+  const sigLines = [
+    `Name    :  ${name}`,
+    `Rank     :  ${rank}`,
+    `CISF No :  ${cisf}`,
+  ];
+  sigLines.forEach(sl => {
+    doc.setFont('times', 'normal');
+    doc.setFontSize(12);
+    doc.text(sl, rEdge, y, { align: 'right' });
+    y += 7;
+  });
+
+  doc.save('CISF_Caution_Money_Application.pdf');
+}
+
+// Render preview on load
+updatePreview();
+</script>
+</body>
+</html>
